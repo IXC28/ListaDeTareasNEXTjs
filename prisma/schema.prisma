@@ -1,0 +1,20 @@
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+enum Status {
+  COMPLETA
+  INCOMPLETA
+}
+
+model Tareas {
+  id     Int    @id @default(autoincrement())
+  text    String
+  status  Status  @default(INCOMPLETA)
+  //user   User   @relation(fields: [userId], references: [id])
+  //userId Int    @unique
+}
