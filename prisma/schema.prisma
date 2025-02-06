@@ -6,6 +6,10 @@ datasource db {
   // directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 enum Status {
   COMPLETA
   INCOMPLETA
