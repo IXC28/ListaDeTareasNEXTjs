@@ -3,29 +3,29 @@ import { useState, useEffect, useRef } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
-export default function ListaDeTareas() {
-
-
-  //const { data } = axios.get('/api/products');
-  
+export default function ListaDeTareas() {  
   const [tareas, setTareas] = useState([]); 
   const [total, setTotal] = useState(0);      
   const [titulo, setTitulo] = useState("");   
   const lista = useRef(null);                 
 
-// (async () => {
-//   try {
-//     const response = await fetch('/api/tareas');  // URL relativa
-//     if (!response.ok) {
-//       throw new Error('Error al obtener las tareas');
-//     }
+  
+  useEffect(() => {
+    const obtenerTareas = async () => {
+      try {
+        const response = await fetch('/api/tareas');
+        if (!response.ok) {
+          throw new Error('Error al obtener las tareas');
+        }
+        const data = await response.json();
+        setTareas(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
 
-//     const data = await response.json();  
-//     console.log('Tareas obtenidas:', data);  // Mostrar tareas en consola
-//   } catch (error) {
-//     console.error('Error:', error);
-//   }
-// })();
+    obtenerTareas();
+  }, []);
 
   
   useEffect(() => {

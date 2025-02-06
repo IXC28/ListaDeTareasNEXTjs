@@ -1,5 +1,5 @@
 "use server";
-import { db } from '@lib/db';
+import { db } from '@/lib/db';
 
 export async function GET() {
     try {
@@ -16,3 +16,24 @@ export async function GET() {
       });
     }
   }
+
+export async function POST(request) {
+  try {
+    const data = await request.json();
+    const nuevaTarea = await db.tareas.create({
+      data: {
+        text: data.text,
+        status: 'INCOMPLETA'
+      }
+    });
+    return new Response(JSON.stringify(nuevaTarea), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error al crear tarea:', error);
+    return new Response(JSON.stringify({ error: 'Error al crear tarea' }), {
+      status: 500,
+    });
+  }
+}
