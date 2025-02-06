@@ -1,8 +1,12 @@
 import { PrismaClient } from '@prisma/client';
-import { glob } from 'fs';
-const prisma = glob.prisma || new PrismaClient();
-if (process.env.NODE_ENV !== 'production') glob.prisma = prisma;{
-  glob.prisma = prisma;
-}
 
-module.exports = {prisma};
+const prismaClientSingleton = () => {
+  return new PrismaClient();
+};
+
+const globalForPrisma = globalThis;
+export const db = globalForPrisma.prisma ?? prismaClientSingleton();
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;
+
+module.exports = {db};
