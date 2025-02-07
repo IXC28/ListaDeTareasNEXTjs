@@ -7,6 +7,9 @@ export default function ListaDeTareas() {
   const [tareas, setTareas] = useState([]);
   const [total, setTotal] = useState(0);
   const [titulo, setTitulo] = useState("");
+  const [status, setStatus] = useState("");
+  const [completed, setCompleted] = useState(0);
+  const [incompleted, setIncompleted] = useState(0);
   let [id, setId] = useState(0);
   const lista = useRef(null);
 
@@ -57,6 +60,7 @@ export default function ListaDeTareas() {
   
         // Actualizar el estado `tareas` con la nueva tarea
         setTareas([...tareas, nuevaTarea]);
+        setIncompleted(incompleted + 1);
         setTitulo("");
   
       } catch (error) {
@@ -76,10 +80,14 @@ export default function ListaDeTareas() {
       if (!response.ok) {
         throw new Error('Error al borrar la tarea', response);
       }
-
+      const tareaEliminada = tareas.find(tarea => tarea.id === id);
       // Actualizar el estado `tareas` con la nueva tarea
       setTareas(tareas.filter(tarea => tarea.id !== id));
-
+      if (tareaEliminada.status === 'COMPLETA') {
+        setCompleted(completed - 1);
+      } else {
+        setIncompleted(incompleted - 1);
+      }
     } catch (error) {
       console.error('Error:', error);
     }
@@ -104,6 +112,13 @@ export default function ListaDeTareas() {
       setTareas(tareas.map(tarea => 
         tarea.id === tareaActualizada.id ? tareaActualizada : tarea
       ));
+      if (tareaActualizada.status === 'COMPLETA') {
+        setCompleted(completed + 1);
+        setIncompleted(incompleted - 1);
+      } else {
+        setCompleted(completed - 1);
+        setIncompleted(incompleted + 1);
+      }
     } catch (error) {
       console.error('Error:', error);
     }
@@ -161,8 +176,8 @@ export default function ListaDeTareas() {
 
       <div id="contadores" className="flex justify-between items-center gap-4 mt-4 ml-2 mr-2">
         <span id="total" className="bg-yellow-400 rounded-md px-4 py-2">Total = {total}</span>
-        <span id="completed" className="bg-green-500 rounded-md px-4 py-2">Completed</span>
-        <span id="incompleted" className="bg-red-500 rounded-md px-4 py-2">Incomplete</span>
+        <span id="completed" className="bg-green-500 rounded-md px-4 py-2">Completed = {completed}</span>
+        <span id="incompleted" className="bg-red-500 rounded-md px-4 py-2">Incomplete = {incompleted}</span>
       </div>
 
     </div>
