@@ -1,18 +1,35 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 export default function ListaDeTareas() {
+  const router = useRouter();
   const [tareas, setTareas] = useState([]);
   const [total, setTotal] = useState(0);
   const [titulo, setTitulo] = useState("");
   const [status, setStatus] = useState("");
   const [completed, setCompleted] = useState(0);
   const [incompleted, setIncompleted] = useState(0);
-  let [id, setId] = useState(0);
   const lista = useRef(null);
 
+  // Verificar autenticación consultando el endpoint que valida el token
+  useEffect(() => {
+    async function verifyAuth() {
+      const res = await fetch('/api/usuarios');
+      if (!res.ok) {
+        router.push('/Login');
+      } else {
+        const data = await res.json();
+        if (!data.authorized) {
+          router.push('/Login'); 
+        }
+        // Opcional: almacena los datos del usuario en un estado si lo necesitas
+      }
+    }
+    verifyAuth();
+  }, [router]);
 
   useEffect(() => {
     const obtenerTareas = async () => {
@@ -27,10 +44,8 @@ export default function ListaDeTareas() {
         console.error('Error:', error);
       }
     };
-
     obtenerTareas();
   }, []);
-
 
   useEffect(() => {
     if (lista.current) {
@@ -38,50 +53,34 @@ export default function ListaDeTareas() {
     }
   }, [tareas]);
 
-
   const guardarTarea = async () => {
     if (titulo.trim()) {
       try {
-        // Enviar la tarea al backend
         const response = await fetch('/api/tareas', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: titulo }),
         });
-  
         if (!response.ok) {
           throw new Error('Error al enviar la tarea');
         }
-  
-        // Obtener la nueva tarea creada desde el backend
         const nuevaTarea = await response.json();
-  
-        // Actualizar el estado `tareas` con la nueva tarea
         setTareas([...tareas, nuevaTarea]);
         setIncompleted(incompleted + 1);
         setTitulo("");
-  
       } catch (error) {
         console.error('Error:', error);
       }
     }
   };
-  
+
   const borrarTarea = async (id) => {
-
     try {
-      // Enviar la tarea al backend
-      const response = await fetch(`/api/tareas/${id}`, {
-        method: 'DELETE',
-      });
-
+      const response = await fetch(`/api/tareas/${id}`, { method: 'DELETE' });
       if (!response.ok) {
-        throw new Error('Error al borrar la tarea', response);
+        throw new Error('Error al borrar la tarea');
       }
       const tareaEliminada = tareas.find(tarea => tarea.id === id);
-      // Actualizar el estado `tareas` con la nueva tarea
       setTareas(tareas.filter(tarea => tarea.id !== id));
       if (tareaEliminada.status === 'COMPLETA') {
         setCompleted(completed - 1);
@@ -91,24 +90,15 @@ export default function ListaDeTareas() {
     } catch (error) {
       console.error('Error:', error);
     }
-
-  }
+  };
 
   const checarTarea = async (id) => {
-
     try {
-      // Enviar la tarea al backend
-      const response = await fetch(`/api/tareas/${id}`, {
-        method: 'PATCH',
-      });
-
+      const response = await fetch(`/api/tareas/${id}`, { method: 'PATCH' });
       if (!response.ok) {
-        throw new Error('Error al chequiar la tarea', response);
+        throw new Error('Error al chequear la tarea');
       }
-      // Obtener la tarea actualizada desde el backend
       const tareaActualizada = await response.json();
-
-      // Actualizar el estado de `tareas`
       setTareas(tareas.map(tarea => 
         tarea.id === tareaActualizada.id ? tareaActualizada : tarea
       ));
@@ -122,12 +112,10 @@ export default function ListaDeTareas() {
     } catch (error) {
       console.error('Error:', error);
     }
-
-  }
+  };
 
   return (
     <div className="grid w-full gap-2">
-
       <div className="w-full h-32 flex items-center justify-center">
         <label className="text-black text-4xl">Lista De Tareas</label>
       </div>
@@ -141,13 +129,13 @@ export default function ListaDeTareas() {
         <Button onClick={guardarTarea}>Añadir Tarea</Button>
       </div>
 
-      <div id="lista-tareas" className='h-40 border-4 border-black bg-transparent overflow-auto overflow-x-hidden rounded-lg m-2'>
-        <ul ref={lista} className='list-none m-0 p-0'>
-          {tareas.map((tarea, index) => (
+      <div id="lista-tareas" className="h-40 border-4 border-black bg-transparent overflow-auto overflow-x-hidden rounded-lg m-2">
+        <ul ref={lista} className="list-none m-0 p-0">
+          {tareas.map((tarea) => (
             <li key={tarea.id} className="list-items flex justify-between items-center w-full border-2 border-gray-700 p-2 rounded-lg">
               <button 
-              className="delete-btn flex justify-center items-center w-10 h-10 bg-transparent text-black border border-red-500 hover:bg-red-500 transition-all duration-500 ease-in-out rounded-lg"
-              onClick={() => borrarTarea(tarea.id)}
+                className="delete-btn flex justify-center items-center w-10 h-10 bg-transparent text-black border border-red-500 hover:bg-red-500 transition-all duration-500 ease-in-out rounded-lg"
+                onClick={() => borrarTarea(tarea.id)}
               >
                 <svg className="delete-item w-6 h-6 cursor-pointer" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round"
@@ -160,10 +148,8 @@ export default function ListaDeTareas() {
               </span>
 
               <button 
-              onClick={() => checarTarea(tarea.id)}
-              className={`check-btn flex justify-center items-center w-10 h-10 bg-transparent border border-green-500 transition-all duration-500 ease-in-out rounded-lg
-              ${tarea.status === "COMPLETA" ? "bg-green-600 bg-opacity-50 text-transparent" : "hover:bg-green-500 text-black"}`}
-              
+                onClick={() => checarTarea(tarea.id)}
+                className={`check-btn flex justify-center items-center w-10 h-10 bg-transparent border border-green-500 transition-all duration-500 ease-in-out rounded-lg ${tarea.status === "COMPLETA" ? "bg-green-400 bg-opacity-50 text-transparent cursor-not-allowed" : "hover:bg-green-500 text-black"}`}
               >
                 <svg className="check-item w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -179,7 +165,6 @@ export default function ListaDeTareas() {
         <span id="completed" className="bg-green-500 rounded-md px-4 py-2">Completed = {completed}</span>
         <span id="incompleted" className="bg-red-500 rounded-md px-4 py-2">Incomplete = {incompleted}</span>
       </div>
-
     </div>
   );
 }
