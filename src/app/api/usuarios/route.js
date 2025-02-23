@@ -64,6 +64,9 @@ export async function POST(req) {
                 });
             }
 
+            // Depurar ACCESS_TOKEN_SECRET
+            console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET);
+
             // Generar el accessToken y configurar la cookie
             const userForToken = { id: user.id };
             const accessToken = jwt.sign(userForToken, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
